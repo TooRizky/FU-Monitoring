@@ -13,24 +13,39 @@ export default function Sidebar({ active, onChange }) {
     <aside className="sidebar">
       {/* Logo / Brand */}
       <div className="sidebar-brand">
-        <div className="sidebar-logo">
+        {/* Logo container — taruh file logo di /public/logo.png */}
+        <div className="sidebar-logo" style={{
+          width: 40,
+          height: 40,
+          borderRadius: 10,
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(255,255,255,0.12)',
+          flexShrink: 0,
+        }}>
           <img
             src="/mandiri-logo.png"
-            alt="Bank Mandiri"
-            style={{ width: 32, height: 32, objectFit: 'contain' }}
+            alt="Logo"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              display: 'block',
+            }}
             onError={e => {
-              e.target.style.display = 'none'
-              e.target.nextSibling.style.display = 'flex'
+              // Jika logo.png belum ada, coba logo.svg
+              if (!e.target.src.endsWith('.svg')) {
+                e.target.src = '/logo.svg'
+              } else {
+                // Sembunyikan img, tampilkan placeholder kosong (tidak ada "M")
+                e.target.style.display = 'none'
+              }
             }}
           />
-          <div className="sidebar-logo-fallback" style={{ display: 'none' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <rect width="24" height="24" rx="4" fill="#F5A623"/>
-              <text x="12" y="17" textAnchor="middle" fill="#003F88"
-                fontSize="13" fontWeight="800" fontFamily="Arial, sans-serif">M</text>
-            </svg>
-          </div>
         </div>
+
         <div>
           <div className="sidebar-brand-name">TJD Monitor</div>
           <div className="sidebar-brand-sub">Cabang Tanjung Duren</div>
@@ -57,7 +72,7 @@ export default function Sidebar({ active, onChange }) {
       {/* Footer */}
       <div className="sidebar-footer">
         <div className="sidebar-footer-badge">Bank Mandiri</div>
-        <div className="sidebar-footer-text">© 2025 · Merchant Acquisition</div>
+        <div className="sidebar-footer-text">© 2026 · Merchant Acquisition</div>
       </div>
     </aside>
   )

@@ -1,0 +1,11 @@
+Letakkan file logo Mandiri di sini dengan nama:
+  - mandiri-logo.png   ← digunakan oleh Header & favicon
+
+File ini bisa berupa:
+  • PNG transparan (rekomendasi: 64x64px atau 128x128px)
+  • SVG
+
+Contoh sumber logo resmi:
+  https://www.bankmandiri.co.id
+
+Setelah menaruh file, hapus file placeholder ini.

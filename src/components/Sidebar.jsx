@@ -47,7 +47,7 @@ export default function Sidebar({ active, onChange }) {
         </div>
 
         <div>
-          <div className="sidebar-brand-name">TJD Monitor</div>
+          <div className="sidebar-brand-name">MAPS</div>
           <div className="sidebar-brand-sub">Cabang Tanjung Duren</div>
         </div>
       </div>

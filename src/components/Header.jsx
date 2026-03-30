@@ -1,31 +1,23 @@
 import React from 'react'
 
-function MandiriLogo({ size = 32 }) {
+function MandiriLogo({ size = 34 }) {
   return (
-    <div style={{ width: size, height: size, flexShrink: 0 }}>
-      <img
-        src="/mandiri-logo.png"
-        alt="Bank Mandiri"
-        width={size}
-        height={size}
-        style={{ width: size, height: size, objectFit: 'contain', display: 'block' }}
-        onError={e => {
+    <img
+      src="/logo.png"
+      alt="Logo"
+      width={size}
+      height={size}
+      style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }}
+      onError={e => {
+        // Coba logo.svg sebagai fallback
+        if (!e.target.src.endsWith('.svg')) {
+          e.target.src = '/logo.svg'
+        } else {
+          // Sembunyikan sepenuhnya jika keduanya tidak ada
           e.target.style.display = 'none'
-          e.target.nextSibling.style.display = 'flex'
-        }}
-      />
-      <div style={{
-        display: 'none', width: size, height: size,
-        background: 'rgba(255,255,255,0.15)', borderRadius: 7,
-        alignItems: 'center', justifyContent: 'center',
-      }}>
-        <svg width={size * 0.6} height={size * 0.6} viewBox="0 0 24 24" fill="none">
-          <rect width="24" height="24" rx="4" fill="#F5A623"/>
-          <text x="12" y="17" textAnchor="middle" fill="#003F88"
-            fontSize="13" fontWeight="800" fontFamily="Arial, sans-serif">M</text>
-        </svg>
-      </div>
-    </div>
+        }
+      }}
+    />
   )
 }
 
@@ -47,10 +39,15 @@ export default function Header({ title, subtitle, right, backBtn }) {
           </button>
         )}
 
-        {/* Hide logo in desktop mode (sidebar already shows branding) */}
-        <div className="header-logo-wrap">
+        {/* Logo — hanya tampil di mobile, disembunyikan di desktop via CSS */}
+        <div className="header-logo-wrap" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <MandiriLogo size={34} />
-          <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.25)', flexShrink: 0 }} />
+          {/* Divider vertikal — hanya tampil jika logo ada */}
+          <div className="header-logo-divider" style={{
+            width: 1, height: 28,
+            background: 'rgba(255,255,255,0.25)',
+            flexShrink: 0,
+          }} />
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>

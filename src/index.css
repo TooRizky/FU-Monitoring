@@ -736,6 +736,11 @@ input:focus, select:focus, textarea:focus { outline: none; }
   }
 }
 
+/* Sembunyikan divider jika gambar logo tidak ada / error */
+.header-logo-wrap img[style*="display: none"] ~ .header-logo-divider {
+  display: none;
+}
+
 /* Hide logo+divider in desktop header (sidebar already has branding) */
 @media (min-width: 1024px) {
   .layout-desktop .header-logo-wrap {

@@ -1,14 +1,13 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import {
-  Search, X, Plus, CheckCircle2, Clock,
+  Search, X, CheckCircle2, Clock,
   ThumbsUp, XCircle, HelpCircle, RefreshCw,
-  UserPlus, FileSpreadsheet,
+  FileSpreadsheet,
 } from 'lucide-react'
 import { useMerchants } from '../hooks/useMerchants'
 import Header from '../components/Header'
 import MerchantCard from '../components/MerchantCard'
 import FollowUpForm from '../components/FollowUpForm'
-import MerchantFormModal from '../components/MerchantFormModal'
 import MerchantDetail from './MerchantDetail'
 import ExcelManager from '../components/ExcelManager'
 import { ProgressBar } from '../components/ProgressBar'
@@ -63,7 +62,6 @@ export default function MerchantsPage() {
   const [search,      setSearch]      = useState('')
   const [activeChip,  setActiveChip]  = useState('semua')
   const [fuMerchant,  setFuMerchant]  = useState(null)
-  const [showAdd,     setShowAdd]     = useState(false)   // tambah merchant baru
   const [showExcel,   setShowExcel]   = useState(false)   // excel manager
   const [detail,      setDetail]      = useState(null)
 
@@ -113,16 +111,6 @@ export default function MerchantsPage() {
               }}
             >
               <FileSpreadsheet size={15} />
-            </button>
-
-            {/* Tambah merchant baru */}
-            <button
-              className="btn btn-yellow btn-sm"
-              onClick={() => setShowAdd(true)}
-              style={{ gap: 5 }}
-              title="Tambah Merchant Baru"
-            >
-              <UserPlus size={13} /> Tambah
             </button>
 
             <button onClick={refetch} style={{
@@ -208,40 +196,11 @@ export default function MerchantsPage() {
         )}
       </div>
 
-      {/* FAB: FU merchant belum disentuh */}
-      {!loading && merchants.some(m => m.followup === 'Belum') && (
-        <button
-          title="FU Merchant Berikutnya"
-          onClick={() => setFuMerchant(merchants.find(m => m.followup === 'Belum'))}
-          style={{
-            position: 'fixed', bottom: 88, right: 16,
-            width: 50, height: 50, borderRadius: '50%',
-            background: 'var(--mandiri-navy)', color: '#fff',
-            border: 'none', cursor: 'pointer', zIndex: 90,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(0,63,136,0.35)',
-            transition: 'transform 0.15s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <Plus size={22} />
-        </button>
-      )}
-
       {/* Modals */}
       {fuMerchant && (
         <FollowUpForm
           merchant={fuMerchant}
           onClose={() => setFuMerchant(null)}
-          onSuccess={refetch}
-        />
-      )}
-
-      {showAdd && (
-        <MerchantFormModal
-          merchant={null}
-          onClose={() => setShowAdd(false)}
           onSuccess={refetch}
         />
       )}

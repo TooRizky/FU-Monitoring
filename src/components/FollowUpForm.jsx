@@ -1,33 +1,62 @@
 import React, { useState } from 'react'
-import {
-  X, MapPin, Save, ExternalLink,
-} from 'lucide-react'
+import { X, Save } from 'lucide-react'
 import { addFollowUp } from '../lib/supabase'
 import { useToast } from '../lib/toast'
-import {
-  HASIL_FU_OPTIONS, EDC_LAIN_OPTIONS,
-  buildMapsUrl, formatDateTime, formatCurrency,
-} from '../lib/utils'
+import { formatDateTime, formatCurrency } from '../lib/utils'
+
+const EDC_LAIN_OPTIONS = [
+  'BCA', 'BRI', 'BNI', 'CIMB', 'Danamon',
+  'GoPay', 'OVO', 'DANA', 'ShopeePay', 'Lainnya',
+]
+
+function parseEdcLain(val) {
+  if (!val || val === '') return []
+  if (Array.isArray(val)) return val
+  return val.split(',').map(s => s.trim()).filter(Boolean)
+}
+
+// Chip read-only untuk info merchant
+function InfoChip({ label, value }) {
+  if (!value) return null
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column',
+      background: 'var(--gray-50)', borderRadius: 8,
+      padding: '6px 10px', flex: 1,
+      border: '1px solid var(--gray-200)',
+    }}>
+      <span style={{ fontSize: '0.625rem', color: 'var(--gray-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+        {label}
+      </span>
+      <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--gray-800)', marginTop: 1 }}>
+        {value}
+      </span>
+    </div>
+  )
+}
 
 export default function FollowUpForm({ merchant, onClose, onSuccess }) {
   const toast = useToast()
 
   const [form, setForm] = useState({
-    hasil_fu:  merchant.hasil_fu && merchant.hasil_fu !== '-' ? merchant.hasil_fu : '',
-    nominal:   merchant.potensi_nominal || '',
+    hasil_fu:    merchant.hasil_fu && merchant.hasil_fu !== '-' ? merchant.hasil_fu : '',
+    nominal:     merchant.potensi_nominal || '',
     edc_mandiri: merchant.edc_mandiri || false,
-    edc_lain:  merchant.edc_lain || '',
-    pic:       merchant.pic && !merchant.pic.startsWith('Belum Tau') ? merchant.pic : '',
-    catatan:   '',
-    alamat:    merchant.alamat || '',
+    edc_lain:    parseEdcLain(merchant.edc_lain),
+    catatan:     '',
   })
   const [saving, setSaving] = useState(false)
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
+  const toggleEdcLain = (val) => {
+    set('edc_lain', form.edc_lain.includes(val)
+      ? form.edc_lain.filter(x => x !== val)
+      : [...form.edc_lain, val]
+    )
+  }
+
   const handleSave = async () => {
-    if (!form.hasil_fu) {
-      toast('Pilih hasil FU terlebih dahulu', 'error'); return
-    }
+    if (!form.hasil_fu) { toast('Pilih hasil FU terlebih dahulu', 'error'); return }
     setSaving(true)
     try {
       await addFollowUp({
@@ -35,10 +64,8 @@ export default function FollowUpForm({ merchant, onClose, onSuccess }) {
         hasil_fu:     form.hasil_fu,
         nominal:      form.nominal ? parseFloat(String(form.nominal).replace(/\D/g, '')) : null,
         edc_mandiri:  form.edc_mandiri,
-        edc_lain:     form.edc_lain   || null,
-        pic:          form.pic        || null,
-        catatan:      form.catatan    || null,
-        alamat:       form.alamat     || null,
+        edc_lain:     form.edc_lain.length > 0 ? form.edc_lain.join(', ') : null,
+        catatan:      form.catatan || null,
         created_by:   'user',
       })
       toast('Follow-up berhasil disimpan ✅', 'success')
@@ -52,9 +79,9 @@ export default function FollowUpForm({ merchant, onClose, onSuccess }) {
   }
 
   const HASIL_BUTTONS = [
-    { value: 'berminat',           label: '✅  Berminat',        active: 'var(--status-berminat)',    bg: 'var(--status-berminat-bg)' },
-    { value: 'pikir-pikir dulu',   label: '🤔  Pikir-Pikir',     active: 'var(--status-pikir)',       bg: 'var(--status-pikir-bg)' },
-    { value: 'Tidak Berminat',     label: '❌  Tidak Berminat',  active: 'var(--status-tidak)',       bg: 'var(--status-tidak-bg)' },
+    { value: 'berminat',         label: '✅  Berminat',       active: 'var(--status-berminat)',  bg: 'var(--status-berminat-bg)' },
+    { value: 'pikir-pikir dulu', label: '🤔  Pikir-Pikir',    active: 'var(--status-pikir)',     bg: 'var(--status-pikir-bg)' },
+    { value: 'Tidak Berminat',   label: '❌  Tidak Berminat', active: 'var(--status-tidak)',     bg: 'var(--status-tidak-bg)' },
   ]
 
   return (
@@ -69,9 +96,6 @@ export default function FollowUpForm({ merchant, onClose, onSuccess }) {
           borderBottom: '1px solid var(--gray-100)',
         }}>
           <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
-            <p style={{ fontSize: '0.6875rem', color: 'var(--mandiri-blue)', fontWeight: 600, marginBottom: 2 }}>
-              {merchant.merchant_id} · {merchant['3p'] || 'Pebisnis'}
-            </p>
             <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--gray-900)', lineHeight: 1.3, margin: 0 }}>
               {merchant.nama_merchant}
             </h2>
@@ -90,72 +114,14 @@ export default function FollowUpForm({ merchant, onClose, onSuccess }) {
         {/* Body */}
         <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 24 }}>
 
-          {/* Alamat + Google Maps */}
+          {/* Info chips read-only: Merchant ID + Kategori 3P */}
           <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ flex: 1 }} className="form-group">
-              <label className="form-label">Alamat</label>
-              <input
-                className="form-input"
-                value={form.alamat}
-                onChange={e => set('alamat', e.target.value)}
-                placeholder="Alamat merchant..."
-              />
-            </div>
-            <a
-              href={buildMapsUrl(form.alamat, merchant.nama_merchant)}
-              target="_blank" rel="noopener noreferrer"
-              style={{
-                alignSelf: 'flex-end',
-                display: 'flex', alignItems: 'center', gap: 5,
-                padding: '11px 12px',
-                background: '#EFF6FF', color: '#1D4ED8',
-                borderRadius: 8, fontWeight: 600, fontSize: '0.8125rem',
-                textDecoration: 'none', flexShrink: 0,
-                border: '1px solid #BFDBFE',
-              }}
-            >
-              <MapPin size={14} />
-              <ExternalLink size={12} />
-            </a>
+            <InfoChip label="Merchant ID" value={merchant.merchant_id} />
+            <InfoChip label="Kategori 3P" value={merchant['3p'] || 'Pebisnis'} />
+            <InfoChip label="PIC" value={merchant.pic && !merchant.pic.startsWith('Belum Tau') ? merchant.pic : '—'} />
           </div>
 
-          {/* PIC */}
-          <div className="form-group">
-            <label className="form-label">PIC Merchant</label>
-            <input
-              className="form-input"
-              value={form.pic}
-              onChange={e => set('pic', e.target.value)}
-              placeholder="Nama kontak / pemilik..."
-            />
-          </div>
-
-          {/* EDC */}
-          <div style={{
-            background: 'var(--gray-50)', borderRadius: 10, padding: 12,
-            border: '1px solid var(--gray-200)', display: 'flex', flexDirection: 'column', gap: 10,
-          }}>
-            <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--gray-700)' }}>Status EDC</p>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--gray-800)' }}>EDC Mandiri</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)' }}>Sudah punya EDC Mandiri?</p>
-              </div>
-              <label className="toggle">
-                <input type="checkbox" checked={form.edc_mandiri} onChange={e => set('edc_mandiri', e.target.checked)} />
-                <span className="toggle-slider" />
-              </label>
-            </div>
-            <div className="form-group">
-              <label className="form-label">EDC Bank Lain</label>
-              <select className="form-select" value={form.edc_lain} onChange={e => set('edc_lain', e.target.value)}>
-                <option value="">— Pilih EDC lain —</option>
-                {EDC_LAIN_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
-            </div>
-          </div>
-
-          {/* Hasil FU — button group */}
+          {/* Hasil FU */}
           <div className="form-group">
             <label className="form-label">
               Hasil Follow-Up <span style={{ color: 'var(--status-tidak)' }}>*</span>
@@ -185,25 +151,76 @@ export default function FollowUpForm({ merchant, onClose, onSuccess }) {
             </div>
           </div>
 
-          {/* Nominal — tampil jika berminat/pikir */}
-          {(form.hasil_fu === 'berminat' || form.hasil_fu === 'pikir-pikir dulu') && (
-            <div className="form-group" style={{ animation: 'fadeIn 0.2s ease' }}>
-              <label className="form-label">Potensi Nominal (Rp)</label>
-              <input
-                className="form-input"
-                type="number"
-                value={form.nominal}
-                onChange={e => set('nominal', e.target.value)}
-                placeholder="cth: 5000000"
-                min="0"
-              />
-              {form.nominal && (
-                <p style={{ fontSize: '0.75rem', color: 'var(--mandiri-blue)', fontWeight: 600 }}>
-                  = {formatCurrency(parseFloat(form.nominal))}
+          {/* Potensi Nominal — selalu tampil */}
+          <div className="form-group">
+            <label className="form-label">Potensi Nominal (Rp)</label>
+            <input
+              className="form-input"
+              type="number"
+              value={form.nominal}
+              onChange={e => set('nominal', e.target.value)}
+              placeholder="cth: 5000000"
+              min="0"
+            />
+            {form.nominal ? (
+              <p style={{ fontSize: '0.75rem', color: 'var(--mandiri-blue)', fontWeight: 600, marginTop: 3 }}>
+                = {formatCurrency(parseFloat(form.nominal))}
+              </p>
+            ) : null}
+          </div>
+
+          {/* EDC Section */}
+          <div style={{
+            background: 'var(--gray-50)', borderRadius: 10, padding: 12,
+            border: '1px solid var(--gray-200)', display: 'flex', flexDirection: 'column', gap: 12,
+          }}>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--gray-700)' }}>Status EDC</p>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--gray-800)' }}>EDC Mandiri</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)' }}>Sudah punya EDC Mandiri?</p>
+              </div>
+              <label className="toggle">
+                <input type="checkbox" checked={form.edc_mandiri} onChange={e => set('edc_mandiri', e.target.checked)} />
+                <span className="toggle-slider" />
+              </label>
+            </div>
+
+            {/* EDC Lain — multiple choice chips */}
+            <div>
+              <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--gray-700)', marginBottom: 8 }}>
+                EDC / E-Wallet Lain
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {EDC_LAIN_OPTIONS.map(opt => {
+                  const checked = form.edc_lain.includes(opt)
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => toggleEdcLain(opt)}
+                      style={{
+                        padding: '6px 12px', borderRadius: 20,
+                        border: `1.5px solid ${checked ? 'var(--mandiri-blue)' : 'var(--gray-300)'}`,
+                        background: checked ? 'var(--mandiri-blue)' : '#fff',
+                        color: checked ? '#fff' : 'var(--gray-600)',
+                        fontSize: '0.8125rem', fontWeight: checked ? 600 : 400,
+                        cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                    >
+                      {checked ? '✓ ' : ''}{opt}
+                    </button>
+                  )
+                })}
+              </div>
+              {form.edc_lain.length > 0 && (
+                <p style={{ fontSize: '0.75rem', color: 'var(--mandiri-blue)', marginTop: 6, fontWeight: 500 }}>
+                  Dipilih: {form.edc_lain.join(', ')}
                 </p>
               )}
             </div>
-          )}
+          </div>
 
           {/* Catatan */}
           <div className="form-group">

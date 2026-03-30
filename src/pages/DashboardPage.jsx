@@ -113,8 +113,8 @@ export default function DashboardPage() {
   return (
     <div className="page">
       <Header
-        title="MAPS"
-        subtitle="Merchant Acquisition & Prioritization System"
+        title="TJD Merchant Monitor"
+        subtitle="Dashboard Monitoring Follow-Up"
         right={
           <button
             onClick={refetch}

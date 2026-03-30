@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import {
   Search, X, Plus, CheckCircle2, Clock,
-  ThumbsUp, XCircle, HelpCircle, RefreshCw, UserPlus,
+  ThumbsUp, XCircle, HelpCircle, RefreshCw,
+  UserPlus, FileSpreadsheet,
 } from 'lucide-react'
 import { useMerchants } from '../hooks/useMerchants'
 import Header from '../components/Header'
@@ -9,6 +10,7 @@ import MerchantCard from '../components/MerchantCard'
 import FollowUpForm from '../components/FollowUpForm'
 import MerchantFormModal from '../components/MerchantFormModal'
 import MerchantDetail from './MerchantDetail'
+import ExcelManager from '../components/ExcelManager'
 import { ProgressBar } from '../components/ProgressBar'
 
 const FILTER_CHIPS = [
@@ -60,13 +62,14 @@ function MerchantListSkeleton() {
 export default function MerchantsPage() {
   const [search,      setSearch]      = useState('')
   const [activeChip,  setActiveChip]  = useState('semua')
-  const [fuMerchant,  setFuMerchant]  = useState(null)   // FU form
-  const [editMerchant,setEditMerchant]= useState(null)   // Edit form (null = closed, false = create new)
-  const [detail,      setDetail]      = useState(null)   // Detail view
+  const [fuMerchant,  setFuMerchant]  = useState(null)
+  const [showAdd,     setShowAdd]     = useState(false)   // tambah merchant baru
+  const [showExcel,   setShowExcel]   = useState(false)   // excel manager
+  const [detail,      setDetail]      = useState(null)
 
   const filters = useMemo(() => {
     const f = {}
-    if (search.trim())         f.search    = search.trim()
+    if (search.trim())          f.search    = search.trim()
     if (activeChip !== 'semua') {
       if (activeChip === 'Sudah' || activeChip === 'Belum')
         f.followup = activeChip
@@ -99,15 +102,29 @@ export default function MerchantsPage() {
         subtitle={`${merchants.length} merchant`}
         right={
           <div style={{ display: 'flex', gap: 6 }}>
+            {/* Excel export/import */}
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => setShowExcel(true)}
+              title="Export / Import Excel"
+              style={{
+                color: 'rgba(255,255,255,0.85)', padding: '6px 10px',
+                display: 'flex', alignItems: 'center', gap: 5,
+              }}
+            >
+              <FileSpreadsheet size={15} />
+            </button>
+
             {/* Tambah merchant baru */}
             <button
               className="btn btn-yellow btn-sm"
-              onClick={() => setEditMerchant(false)}
+              onClick={() => setShowAdd(true)}
               style={{ gap: 5 }}
               title="Tambah Merchant Baru"
             >
               <UserPlus size={13} /> Tambah
             </button>
+
             <button onClick={refetch} style={{
               background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8,
               color: '#fff', width: 34, height: 34,
@@ -119,7 +136,7 @@ export default function MerchantsPage() {
         }
       />
 
-      {/* Search + Filter bar (sticky) */}
+      {/* Search + Filter bar */}
       <div style={{
         padding: '10px 16px', background: '#fff',
         borderBottom: '1px solid var(--gray-200)',
@@ -150,7 +167,7 @@ export default function MerchantsPage() {
         <FilterChips active={activeChip} onChange={setActiveChip} />
       </div>
 
-      {/* Mini progress */}
+      {/* Progress bar */}
       {!loading && merchants.length > 0 && (
         <div style={{ padding: '8px 16px 0', background: '#fff', borderBottom: '1px solid var(--gray-100)' }}>
           <ProgressBar value={sudah} max={merchants.length} height={4}
@@ -212,7 +229,7 @@ export default function MerchantsPage() {
         </button>
       )}
 
-      {/* FU Form Modal */}
+      {/* Modals */}
       {fuMerchant && (
         <FollowUpForm
           merchant={fuMerchant}
@@ -221,12 +238,18 @@ export default function MerchantsPage() {
         />
       )}
 
-      {/* Add / Edit Merchant Modal */}
-      {editMerchant !== null && (
+      {showAdd && (
         <MerchantFormModal
-          merchant={editMerchant || null}
-          onClose={() => setEditMerchant(null)}
+          merchant={null}
+          onClose={() => setShowAdd(false)}
           onSuccess={refetch}
+        />
+      )}
+
+      {showExcel && (
+        <ExcelManager
+          onClose={() => setShowExcel(false)}
+          onRefresh={refetch}
         />
       )}
     </div>

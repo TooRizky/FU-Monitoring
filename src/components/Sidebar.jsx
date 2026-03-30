@@ -47,7 +47,7 @@ export default function Sidebar({ active, onChange }) {
         </div>
 
         <div>
-          <div className="sidebar-brand-name">MAPS</div>
+          <div className="sidebar-brand-name">TJD Monitor</div>
           <div className="sidebar-brand-sub">Cabang Tanjung Duren</div>
         </div>
       </div>
@@ -72,7 +72,7 @@ export default function Sidebar({ active, onChange }) {
       {/* Footer */}
       <div className="sidebar-footer">
         <div className="sidebar-footer-badge">Bank Mandiri</div>
-        <div className="sidebar-footer-text">© 2026 · Merchant Acquisition</div>
+        <div className="sidebar-footer-text">© 2025 · Merchant Acquisition</div>
       </div>
     </aside>
   )

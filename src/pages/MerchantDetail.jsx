@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import {
-  MapPin, Calendar, ClipboardList, Image,
+  Calendar, ClipboardList, Image,
   Plus, Clock, CheckCircle2, AlertTriangle,
-  ExternalLink, Edit2, Trash2,
-  ChevronDown, ChevronUp,
+  Trash2, ChevronDown, ChevronUp,
 } from 'lucide-react'
 import { getFollowUpHistory, deleteFollowUp } from '../lib/supabase'
 import Header from '../components/Header'
 import FollowUpForm from '../components/FollowUpForm'
 import EvidenceSection from '../components/EvidenceSection'
-import MerchantForm from '../components/MerchantForm'
 import { useToast } from '../lib/toast'
 import {
   formatDateTime, formatCurrency,
-  getHasilBadgeClass, getHasilLabel, buildMapsUrl,
+  getHasilBadgeClass, getHasilLabel,
 } from '../lib/utils'
 
 function Section({ title, icon: Icon, children, action, defaultOpen = true }) {
@@ -146,7 +144,7 @@ function HistoryItem({ item, isLast, onDelete }) {
           )}
           {item.edc_lain && (
             <span style={{ fontSize: '0.6875rem', background: 'var(--gray-100)', color: 'var(--gray-600)', padding: '2px 7px', borderRadius: 4 }}>
-              EDC {item.edc_lain}
+              {item.edc_lain}
             </span>
           )}
         </div>
@@ -155,13 +153,12 @@ function HistoryItem({ item, isLast, onDelete }) {
   )
 }
 
-export default function MerchantDetail({ merchant: init, onBack, onFU, onRefresh }) {
-  const toast                           = useToast()
-  const [merchant,  setMerchant]        = useState(init)
-  const [history,   setHistory]         = useState([])
-  const [loadingH,  setLoadingH]        = useState(true)
-  const [showFU,    setShowFU]          = useState(false)
-  const [showEdit,  setShowEdit]        = useState(false)
+export default function MerchantDetail({ merchant: init, onBack, onRefresh }) {
+  const toast                       = useToast()
+  const [merchant,  setMerchant]    = useState(init)
+  const [history,   setHistory]     = useState([])
+  const [loadingH,  setLoadingH]    = useState(true)
+  const [showFU,    setShowFU]      = useState(false)
 
   const loadHistory = async () => {
     setLoadingH(true)
@@ -172,8 +169,6 @@ export default function MerchantDetail({ merchant: init, onBack, onFU, onRefresh
 
   useEffect(() => { loadHistory() }, [merchant.id])
 
-  const mapsUrl = buildMapsUrl(merchant.alamat, merchant.nama_merchant)
-
   return (
     <div className="page">
       <Header
@@ -181,29 +176,19 @@ export default function MerchantDetail({ merchant: init, onBack, onFU, onRefresh
         subtitle={merchant.nama_merchant}
         backBtn={onBack}
         right={
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={() => setShowEdit(true)}
-              style={{ color: 'rgba(255,255,255,0.85)', padding: '6px 8px' }}
-              title="Edit merchant"
-            >
-              <Edit2 size={15} />
-            </button>
-            <button
-              className="btn btn-yellow btn-sm"
-              onClick={() => setShowFU(true)}
-              style={{ gap: 5, padding: '7px 12px' }}
-            >
-              <Plus size={14} /> FU
-            </button>
-          </div>
+          <button
+            className="btn btn-yellow btn-sm"
+            onClick={() => setShowFU(true)}
+            style={{ gap: 5, padding: '7px 14px' }}
+          >
+            <Plus size={14} /> FU
+          </button>
         }
       />
 
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-        {/* Hero */}
+        {/* Hero status */}
         <div style={{
           borderRadius: 12, padding: 16,
           background: merchant.followup === 'Sudah'
@@ -240,29 +225,15 @@ export default function MerchantDetail({ merchant: init, onBack, onFU, onRefresh
           </div>
         </div>
 
-        {/* Info Merchant */}
+        {/* Info Merchant (read-only) */}
         <Section title="Informasi Merchant" icon={ClipboardList}>
-          <InfoRow label="Merchant ID"     value={merchant.merchant_id}  mono />
+          <InfoRow label="Merchant ID"     value={merchant.merchant_id} mono />
           <InfoRow label="Kategori 3P"     value={merchant['3p']} />
-          <InfoRow label="PIC Merchant"    value={merchant.pic && !merchant.pic.startsWith('Belum Tau') ? merchant.pic : '—'} />
+          <InfoRow label="PIC"             value={merchant.pic && !merchant.pic.startsWith('Belum Tau') ? merchant.pic : '—'} />
           <InfoRow label="EDC Mandiri"     value={merchant.edc_mandiri ? '✅  Ya' : '❌  Belum'} />
           <InfoRow label="EDC Lain"        value={merchant.edc_lain || '—'} />
           <InfoRow label="Potensi Nominal" value={merchant.potensi_nominal ? formatCurrency(merchant.potensi_nominal) : '—'} highlight />
           <InfoRow label="FU Terakhir"     value={formatDateTime(merchant.tanggal_fu_terakhir)} />
-          {merchant.alamat && <InfoRow label="Alamat" value={merchant.alamat} />}
-
-          <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: 8, padding: '10px 16px', marginTop: 12,
-              background: '#EFF6FF', color: '#1D4ED8',
-              borderRadius: 8, fontWeight: 600, fontSize: '0.875rem',
-              textDecoration: 'none', border: '1px solid #BFDBFE',
-            }}>
-            <MapPin size={15} />
-            Buka di Google Maps
-            <ExternalLink size={13} />
-          </a>
         </Section>
 
         {/* Riwayat FU */}
@@ -310,7 +281,7 @@ export default function MerchantDetail({ merchant: init, onBack, onFU, onRefresh
           )}
         </Section>
 
-        {/* Bukti Kunjungan — full CRUD via EvidenceSection */}
+        {/* Bukti Kunjungan */}
         <Section title="Bukti Kunjungan" icon={Image}>
           <EvidenceSection merchantId={merchant.id} />
         </Section>
@@ -321,15 +292,11 @@ export default function MerchantDetail({ merchant: init, onBack, onFU, onRefresh
         <FollowUpForm
           merchant={merchant}
           onClose={() => setShowFU(false)}
-          onSuccess={() => { loadHistory(); onRefresh?.() }}
-        />
-      )}
-
-      {showEdit && (
-        <MerchantForm
-          merchant={merchant}
-          onClose={() => setShowEdit(false)}
-          onSuccess={() => { setShowEdit(false); onRefresh?.(); onBack() }}
+          onSuccess={() => {
+            loadHistory()
+            onRefresh?.()
+            // update local merchant state with fresh data
+          }}
         />
       )}
     </div>

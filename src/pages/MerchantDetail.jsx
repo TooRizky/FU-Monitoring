@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import {
   Calendar, ClipboardList, Image,
   Plus, Clock, CheckCircle2, AlertTriangle,
-  Trash2, ChevronDown, ChevronUp,
+  Trash2, ChevronDown, ChevronUp, MapPin,
 } from 'lucide-react'
 import { getFollowUpHistory, deleteFollowUp } from '../lib/supabase'
 import Header from '../components/Header'
@@ -176,13 +176,37 @@ export default function MerchantDetail({ merchant: init, onBack, onRefresh }) {
         subtitle={merchant.nama_merchant}
         backBtn={onBack}
         right={
-          <button
-            className="btn btn-yellow btn-sm"
-            onClick={() => setShowFU(true)}
-            style={{ gap: 5, padding: '7px 14px' }}
-          >
-            <Plus size={14} /> FU
-          </button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              title="Cari di Google Maps"
+              onClick={() => {
+                const query = [merchant.nama_merchant, merchant.alamat || 'Tanjung Duren']
+                  .filter(Boolean).join(' ')
+                window.open(
+                  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`,
+                  '_blank', 'noopener,noreferrer'
+                )
+              }}
+              style={{
+                background: 'rgba(255,255,255,0.18)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: 8,
+                color: '#fff',
+                width: 34, height: 34,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', flexShrink: 0,
+              }}
+            >
+              <MapPin size={16} />
+            </button>
+            <button
+              className="btn btn-yellow btn-sm"
+              onClick={() => setShowFU(true)}
+              style={{ gap: 5, padding: '7px 14px' }}
+            >
+              <Plus size={14} /> FU
+            </button>
+          </div>
         }
       />
 
